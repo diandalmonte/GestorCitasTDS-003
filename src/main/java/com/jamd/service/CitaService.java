@@ -102,7 +102,7 @@ public class CitaService {
         return citaExistente;
     }
 
-    public void deleteAppointment(int id) {
+    public void eliminarCita(int id) {
         Cita cita = citaManager.obtenerPorId(id);
         
         // Cita no se puede borrar si ya ocurrió

@@ -210,7 +210,33 @@ public class ContactoManager implements CrudManager<Contacto, CamposContacto>{
         }
     }
 
-    
+public Contacto findById(int id) {
+    String query = "SELECT nombre, apellido, empresa, telefono, correo " +
+                   "FROM Contactos WHERE id_contacto = ?";
+    Contacto contacto = null;
+
+    try (Connection connection = db.conectar();
+         PreparedStatement pStatement = connection.prepareStatement(query)) {
+
+        pStatement.setInt(1, id);
+        ResultSet rSet = pStatement.executeQuery();
+
+        if (rSet.next()) {
+            String nombre = rSet.getString("nombre");
+            String apellido = rSet.getString("apellido");
+            String empresa = rSet.getString("empresa");
+            String telefono = rSet.getString("telefono");
+            String correo = rSet.getString("correo");
+
+            contacto = new Contacto(nombre, apellido, empresa, telefono, correo);
+        }
+
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+
+    return contacto;
+}
 
     public int findId(String correo) throws NoSuchElementException, SQLException{
         String query = "SELECT id_contacto FROM Contactos " +
@@ -227,6 +253,7 @@ public class ContactoManager implements CrudManager<Contacto, CamposContacto>{
                 }
             }
         
+
             } catch (SQLException e){
                 e.printStackTrace();
                 throw e;
