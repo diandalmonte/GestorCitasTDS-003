@@ -8,7 +8,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
-
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Controller
@@ -34,10 +34,15 @@ public class CitaController {
     
     // Crear nueva cita
     @PostMapping("/crear")
-    public String crearCita(@ModelAttribute Cita cita, 
-                           @RequestParam(required = false) List<Integer> contactoIds,
-                           Model model) {
+    public String crearCita(@ModelAttribute Cita cita,
+                        @RequestParam("fecha") String fechaStr,  // ← Recibir fecha como String
+                        @RequestParam(required = false) List<Integer> contactoIds,
+                        Model model) {
         try {
+            // Convertir String a LocalDateTime
+            LocalDateTime fecha = LocalDateTime.parse(fechaStr.replace(" ", "T"));
+            cita.setFecha(fecha);
+            
             // Asignar contactos seleccionados
             if (contactoIds != null && !contactoIds.isEmpty()) {
                 for (Integer contactoId : contactoIds) {
@@ -48,10 +53,13 @@ public class CitaController {
             
             citaService.crearCita(cita);
             model.addAttribute("mensaje", "Cita creada exitosamente");
-        } catch (IllegalArgumentException e) {
-            model.addAttribute("error", e.getMessage());
+            
+        } catch (Exception e) {
+            model.addAttribute("error", "Error al crear cita: " + e.getMessage());
+            e.printStackTrace(); // Para debugging
         }
         
+        model.addAttribute("cita", new Cita());
         model.addAttribute("citas", citaService.getCitasPorVenir());
         model.addAttribute("contactos", contactoService.getAllContactos());
         return "citas/principal";
@@ -61,7 +69,7 @@ public class CitaController {
     @GetMapping("/eliminar/{id}")
     public String eliminarCita(@PathVariable int id, Model model) {
         try {
-            citaService.deleteAppointment(id);
+            citaService.eliminarCita(id);
             model.addAttribute("mensaje", "Cita eliminada exitosamente");
         } catch (IllegalArgumentException | IllegalStateException e) {
             model.addAttribute("error", e.getMessage());
